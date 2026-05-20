@@ -205,9 +205,8 @@ function hasValidCredentials(sessionPath) {
     if (!fs.existsSync(credsPath)) return false;
     try {
         const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
-        // FIX: creds.registered is only set after first successful connect
-        // creds.me.id existing is enough to know this session is linked
-        return !!(creds && creds.me && creds.me.id);
+        // Check if registration was fully completed (registered is true) and we have a valid me.id
+        return !!(creds && creds.registered && creds.me && creds.me.id);
     } catch (_error) {
         console.log(chalk.red(`Error reading credentials: ${_error.message}`));
         return false;
@@ -226,7 +225,6 @@ async function connectWithCredentials(kingbadboiNumber) {
 
     const bad = makeWASocket({
         logger: pino({ level: "fatal" }),
-        printQRInTerminal: false,
         auth: state,
         version: [2, 3000, 1033942132], 
         browser: Browsers.ubuntu("Edge"),
@@ -284,8 +282,14 @@ async function startpairing(kingbadboiNumber) {
     
     // No valid credentials, start fresh pairing
     console.log(chalk.yellow(`🔗 No valid credentials for ${kingbadboiNumber}, starting pairing process...`));
-    // FIX: Ensure dir exists before Baileys tries to write creds.json (prevents ENOENT)
-    if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
+    if (fs.existsSync(sessionPath)) {
+        try {
+            deleteFolderRecursive(sessionPath);
+        } catch (_err) {
+            console.error('Error cleaning stale credentials:', _err.message);
+        }
+    }
+    fs.mkdirSync(sessionPath, { recursive: true });
     await fetchLatestBaileysVersion();
     const {
         state,
@@ -294,7 +298,6 @@ async function startpairing(kingbadboiNumber) {
 
     const bad = makeWASocket({
         logger: pino({ level: "fatal" }),
-        printQRInTerminal: false,
         auth: state,
         version: [2, 3000, 1033942132], 
         browser: Browsers.ubuntu("Edge"),
@@ -746,9 +749,10 @@ bad.ev.on('messages.upsert', async chatUpdate => {
                     shouldReconnect = false;
                     break;
                 case DisconnectReason.loggedOut:
-                    // FIX: preserve creds.json so number stays registered
-                    console.log(chalk.red.bold(`🚪 Logged out - cleaning pre-keys (creds preserved)`));
-                    cleanSessionFiles(sessionPath);
+                    console.log(chalk.red.bold(`🚪 Logged out - deleting session directory`));
+                    setTimeout(() => {
+                        try { deleteFolderRecursive(sessionPath); } catch (_) {}
+                    }, 2000);
                     shouldReconnect = false;
                     break;
             }
@@ -824,11 +828,10 @@ bad.ev.on('messages.upsert', async chatUpdate => {
                     break;
 
                 case 401:
-                    // FIX: don't delete full session on 401 - clean pre-keys only
-                    console.log(chalk.red(`🔐 401 - cleaning pre-keys, reconnecting...`));
-                    cleanSessionFiles(sessionPath);
-                    await sleep(5000);
-                    startpairing(kingbadboiNumber);
+                    console.log(chalk.red(`🔐 401 - Logged out, deleting session directory...`));
+                    setTimeout(() => {
+                        try { deleteFolderRecursive(sessionPath); } catch (_) {}
+                    }, 2000);
                     break;
 
                 case 429:

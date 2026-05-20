@@ -14,7 +14,7 @@
         "node": ">=16.9.0"
     },
     "scripts": {
-        "start": "npx pm2-runtime start ecosystem.config.js",
+        "start": "node --no-deprecation node_modules/pm2/bin/pm2-runtime start ecosystem.config.js",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix"
     },

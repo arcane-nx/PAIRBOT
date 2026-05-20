@@ -16,7 +16,6 @@ async function connectToWhatsApp(onMessage, onConnectionUpdate, onCredsUpdate) {
     const sock = makeWASocket({
         version,
         logger: P({ level: "silent" }),
-        printQRInTerminal: true,
         auth: {
             creds: state.creds,
             keys: makeCacheableSignalKeyStore(state.keys, P({ level: "silent" })),

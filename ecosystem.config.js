@@ -9,7 +9,7 @@ module.exports = {
     watch: false,          // FIX: watch:true was restarting on any file change
     autorestart: true,
     max_memory_restart: "1500M",
-    node_args: "--max-old-space-size=1400 --expose-gc",
+    node_args: "--max-old-space-size=1400 --expose-gc --no-deprecation",
     env: {
       NODE_ENV: "production"
     },
