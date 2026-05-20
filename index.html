@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝐄𝐌𝐌𝐘𝐇𝐄𝐍𝐙-WHATSAPP BOT PAIR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #25D366, #128C7E, #075E54);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: #25D366;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
+        h1 {
+            color: #075E54;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #075E54;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #25D366;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+        }
+
+        .phone-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+        .phone-hint strong {
+            color: #dc3545;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .pairing-code {
+            font-size: 24px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px dashed #25D366;
+            border-radius: 8px;
+            color: #075E54;
+        }
+
+        .sessions-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .sessions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sessions-title {
+            font-size: 20px;
+            color: #075E54;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            padding: 8px 16px;
+            background: #128C7E;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #075E54;
+        }
+
+        .sessions-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .session-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #25D366;
+        }
+
+        .session-info {
+            text-align: left;
+        }
+
+        .session-phone {
+            font-weight: 600;
+            color: #075E54;
+            font-size: 16px;
+        }
+
+        .session-status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .session-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .no-sessions {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .session-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .delete-btn {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📱</div>
+        <h1>WhatsApp Pairing</h1>
+        <p class="subtitle">Generate pairing codes for WhatsApp connections</p>
+        
+        <form id="pairingForm">
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number:</label>
+                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="e.g., 2348140825959" required>
+                <div class="phone-hint">
+                    <strong>Rules:</strong> Numbers only • No letters • Cannot start with 0 • Format: 2348140825959
+                </div>
+            </div>
+            
+            <button type="submit" id="submitBtn">
+                Generate Pairing Code
+            </button>
+        </form>
+
+        <div id="result" class="result">
+            <div id="resultMessage"></div>
+        </div>
+
+        <div class="sessions-section">
+            <div class="sessions-header">
+                <h3 class="sessions-title">Active Sessions</h3>
+                <button class="refresh-btn" onclick="loadSessions()">🔄 Refresh</button>
+            </div>
+            <div id="sessionsList" class="sessions-list">
+                <div class="no-sessions">Loading sessions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isSubmitting = false;
+
+        document.getElementById('pairingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) return;
+            
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const result = document.getElementById('result');
+            const resultMessage = document.getElementById('resultMessage');
+            
+            if (!phoneNumber) {
+                showResult('Please enter a phone number', 'error');
+                return;
+            }
+            
+            // Client-side validation
+            const cleanedNumber = phoneNumber.replace(/\D/g, '');
+            
+            if (cleanedNumber.startsWith('0')) {
+                showResult('Phone numbers cannot start with 0', 'error');
+                return;
+            }
+            
+            if (!/^\d+$/.test(cleanedNumber)) {
+                showResult('Phone numbers can only contain digits', 'error');
+                return;
+            }
+            
+            if (cleanedNumber.length < 10) {
+                showResult('Phone number must be at least 10 digits', 'error');
+                return;
+            }
+            
+            if (cleanedNumber.length > 15) {
+                showResult('Phone number cannot exceed 15 digits', 'error');
+                return;
+            }
+            
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>Generating Code...';
+            result.style.display = 'none';
+            
+            try {
+                const response = await fetch('/request-pairing', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phoneNumber: cleanedNumber })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultMessage.innerHTML = `
+                        <div>✅ Pairing code generated successfully!</div>
+                        <div style="margin: 10px 0;">Phone: <strong>+${data.phoneNumber}</strong></div>
+                        <div class="pairing-code">${data.pairingCode}</div>
+                        <div style="font-size: 14px; color: #666;">
+                            Enter this code in your WhatsApp app when prompted
+                        </div>
+                    `;
+                    showResult('', 'success');
+                    
+                    // Clear form and refresh sessions
+                    document.getElementById('phoneNumber').value = '';
+                    setTimeout(() => loadSessions(), 1000);
+                    
+                } else {
+                    showResult(data.error || 'Failed to generate pairing code', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showResult('Network error. Please check your connection and try again.', 'error');
+            } finally {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Generate Pairing Code';
+            }
+        });
+        
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            const resultMessage = document.getElementById('resultMessage');
+            
+            if (message) {
+                resultMessage.innerHTML = message;
+            }
+            
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+            
+            // Auto hide error messages after 5 seconds
+            if (type === 'error') {
+                setTimeout(() => {
+                    result.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        async function loadSessions() {
+            const sessionsList = document.getElementById('sessionsList');
+            sessionsList.innerHTML = '<div class="no-sessions">Loading sessions...</div>';
+            
+            try {
+                const response = await fetch('/sessions');
+                const data = await response.json();
+                
+                if (data.success && data.sessions.length > 0) {
+                    sessionsList.innerHTML = data.sessions.map(session => `
+                        <div class="session-item">
+                            <div class="session-info">
+                                <div class="session-phone">+${session.phoneNumber}</div>
+                                <div class="session-status">Status: ${session.status}</div>
+                                <div class="session-time">
+                                    ${session.createdAt ? `Created: ${new Date(session.createdAt).toLocaleString()}` : 
+                                      session.loadedAt ? `Loaded: ${new Date(session.loadedAt).toLocaleString()}` : ''}
+                                </div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteSession('${session.phoneNumber}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    sessionsList.innerHTML = '<div class="no-sessions">No active sessions found</div>';
+                }
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+                sessionsList.innerHTML = '<div class="no-sessions">Error loading sessions</div>';
+            }
+        }
+        
+        async function deleteSession(phoneNumber) {
+            if (!confirm(`Are you sure you want to delete the session for +${phoneNumber}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/session/${phoneNumber}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`Session for +${phoneNumber} deleted successfully`, 'success');
+                    setTimeout(() => loadSessions(), 500);
+                } else {
+                    showResult(data.error || 'Failed to delete session', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting session:', error);
+                showResult('Error deleting session', 'error');
+            }
+        }
+        
+        // Format phone number input as user types
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            e.target.value = value;
+        });
+        
+        // Load sessions when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessions();
+            
+            // Refresh sessions every 30 seconds
+            setInterval(loadSessions, 30000);
+        });
+        
+        // Add copy functionality for pairing codes
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('pairing-code')) {
+                navigator.clipboard.writeText(e.target.textContent.trim()).then(() => {
+                    const originalText = e.target.textContent;
+                    e.target.textContent = 'Copied!';
+                    setTimeout(() => {
+                        e.target.textContent = originalText;
+                    }, 2000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
