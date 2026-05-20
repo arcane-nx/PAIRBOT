@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 async function shipCommand(sock, chatId) {
     try {
         // Get all participants from the group
@@ -38,12 +33,16 @@ async function shipCommand(sock, chatId) {
     }
 }
 
-shipCommand;
-
+const originalCommand = shipCommand;
 
 module.exports = {
     name: 'ship',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

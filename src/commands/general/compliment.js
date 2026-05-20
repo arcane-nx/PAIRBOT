@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const compliments = [
     "You're amazing just the way you are!",
     "You have a great sense of humor!",
@@ -39,6 +34,7 @@ const compliments = [
     "You make the world a better place just by being in it."
 ];
 
+const originalCommand = complimentCommand;
 async function complimentCommand(sock, chatId, message) {
     try {
         if (!message || !chatId) {
@@ -98,10 +94,14 @@ async function complimentCommand(sock, chatId, message) {
 
 { complimentCommand };
 
-
 module.exports = {
     name: 'compliment',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

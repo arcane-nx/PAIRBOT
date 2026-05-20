@@ -57,7 +57,7 @@ function isSessionLimitReached() {
 
 // Helper function to count session folders
 function countSessionFolders() {
-    const pairingDir = './kingbadboitimewisher/pairing';
+    const pairingDir = './database/session';
     
     if (!fs.existsSync(pairingDir)) {
         return 0;
@@ -78,7 +78,7 @@ function countSessionFolders() {
 
 // Load existing sessions on startup
 function loadExistingSessions() {
-    const pairingDir = './kingbadboitimewisher/pairing';
+    const pairingDir = './database/session';
     
     if (!fs.existsSync(pairingDir)) {
         fs.mkdirSync(pairingDir, { recursive: true });
@@ -194,7 +194,7 @@ app.post('/request-pairing', async (req, res) => {
         
         while (attempts < maxAttempts) {
             try {
-                const pairingFilePath = './kingbadboitimewisher/pairing/pairing.json';
+                const pairingFilePath = './database/session/pairing.json';
                 if (fs.existsSync(pairingFilePath)) {
                     const pairingData = JSON.parse(fs.readFileSync(pairingFilePath, 'utf8'));
                     if (pairingData.code) {
@@ -298,7 +298,7 @@ app.delete('/session/:phoneNumber', (req, res) => {
     activeSessions.delete(cleanedNumber);
     
     // Also try to remove the session directory if it exists
-    const sessionDir = `./kingbadboitimewisher/pairing/${sessionId}`;
+    const sessionDir = `./database/session/${sessionId}`;
     try {
         if (fs.existsSync(sessionDir)) {
             fs.rmSync(sessionDir, { recursive: true, force: true });

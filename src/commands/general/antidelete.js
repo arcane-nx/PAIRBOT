@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const fs = require('fs');
 const path = require('path');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
@@ -123,6 +118,7 @@ function saveAntideleteConfig(config) {
 }
 
 // Command Handler
+const originalCommand = handleAntideleteCommand;
 async function handleAntideleteCommand(sock, chatId, message, match) {
     if (!message.key.fromMe) {
         return sock.sendMessage(chatId, { text: '*Only the bot owner can use this command.*' });
@@ -294,10 +290,12 @@ async function handleMessageRevocation(sock, revocationMessage) {
 
 module.exports = {
     name: 'antidelete',
-    handleAntideleteCommand,
-    handleMessageRevocation,
-    storeMessage,
-    async exec(sock, chatId, msg, args) {
-        return handleAntideleteCommand(sock, chatId, msg, args.join(' '));
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

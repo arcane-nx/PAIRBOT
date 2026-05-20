@@ -1,7 +1,7 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = const fetch = require('node-fetch');
+const fetch = require('node-fetch');
 
 const BASE = 'https://api.shizo.top/pies';
 const VALID_COUNTRIES = ['india','malaysia', 'thailand', 'china', 'indonesia', 'japan', 'korea', 'vietnam'];
@@ -15,6 +15,7 @@ async function fetchPiesImageBuffer(country) {
 	return res.buffer();
 }
 
+const originalCommand = piesCommand;
 async function piesCommand(sock, chatId, message, args) {
 	const sub = (args && args[0] ? args[0] : '').toLowerCase();
 	if (!sub) {
@@ -54,10 +55,14 @@ async function piesAlias(sock, chatId, message, country) {
 
 { piesCommand, piesAlias, VALID_COUNTRIES };
 
-
 module.exports = {
     name: 'pies',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const words = ['javascript', 'bot', 'hangman', 'whatsapp', 'nodejs'];
 let hangmanGames = {};
 
@@ -63,12 +58,13 @@ function guessLetter(sock, chatId, letter) {
     }
 }
 
-{ startHangman, guessLetter };
-
-
 module.exports = {
     name: 'hangman',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (args && args.length > 0) {
+            return guessLetter(sock, chatId, args[0].toLowerCase());
+        } else {
+            return startHangman(sock, chatId);
+        }
     }
 };

@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const axios = require('axios');
 
 let triviaGames = {};
@@ -51,12 +46,13 @@ function answerTrivia(sock, chatId, answer) {
     delete triviaGames[chatId];
 }
 
-{ startTrivia, answerTrivia };
-
-
 module.exports = {
     name: 'trivia',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (args && args.length > 0) {
+            return answerTrivia(sock, chatId, args.join(' '));
+        } else {
+            return startTrivia(sock, chatId);
+        }
     }
 };

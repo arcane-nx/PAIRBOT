@@ -2,7 +2,7 @@
  * Created By EmmyHenz
  * isOwner.js — supports both sync and async usage, handles @lid format in groups
 */
-const settings = require('../settings');
+const settings = require('../config/settings');
 
 async function isOwnerOrSudo(senderId, sock, chatId) {
     const ownerNum = String(settings.ownerNumber || '').replace(/[^0-9]/g,'');

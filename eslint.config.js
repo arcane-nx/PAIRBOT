@@ -22,6 +22,8 @@ module.exports = [
       ...nPlugin.configs.recommended.rules,
       "n/no-process-exit": "off",
       "n/no-unpublished-require": "off",
+      "n/no-missing-require": "off",
+      "n/no-unsupported-features/node-builtins": "off",
       "no-unused-vars": ["warn", { 
         "argsIgnorePattern": "^_|^next$", 
         "varsIgnorePattern": "^_|^e$|^error$",
@@ -34,6 +36,6 @@ module.exports = [
   },
   prettierConfig,
   {
-    ignores: ["node_modules/**", "dist/**", "data/**", "database/**", "assets/**", "lib/basestore.js"],
+    ignores: ["node_modules/**", "dist/**", "data/**", "database/**", "assets/**", "src/lib/basestore.js"],
   },
 ];

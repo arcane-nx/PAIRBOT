@@ -1,13 +1,9 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const fetch = require('node-fetch');
 
+const originalCommand = shayariCommand;
 async function shayariCommand(sock, chatId, message) {
     try {
         const response = await fetch('https://api.shizo.top/api/quote/shayari?apikey=knightbot');
@@ -37,10 +33,14 @@ async function shayariCommand(sock, chatId, message) {
 
 { shayariCommand };
 
-
 module.exports = {
     name: 'shayari',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

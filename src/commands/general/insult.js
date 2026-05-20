@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const insults = [
     "You're like a cloud. When you disappear, it's a beautiful day!",
     "You bring everyone so much joy when you leave the room!",
@@ -38,6 +33,7 @@ const insults = [
     "You bring people together... to talk about how annoying you are."
 ];
 
+const originalCommand = insultCommand;
 async function insultCommand(sock, chatId, message) {
     try {
         if (!message || !chatId) {
@@ -97,10 +93,14 @@ async function insultCommand(sock, chatId, message) {
 
 { insultCommand };
 
-
 module.exports = {
     name: 'insult',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const DATA_PATH = path.join(__dirname, '../data/userGroupData.json');
+const DATA_PATH = path.join(__dirname, '../../data/userGroupData.json');
 
 function loadData() {
     try {

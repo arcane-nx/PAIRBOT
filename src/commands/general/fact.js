@@ -1,14 +1,9 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const axios = require('axios');
 
-async function (sock, chatId, message) {
+const originalCommand = async function (sock, chatId, message) {
     try {
         const response = await axios.get('https://uselessfacts.jsph.pl/random.json?language=en');
         const fact = response.data.text;
@@ -19,10 +14,14 @@ async function (sock, chatId, message) {
     }
 };
 
-
 module.exports = {
     name: 'fact',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

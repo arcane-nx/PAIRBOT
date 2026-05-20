@@ -1,4 +1,5 @@
 /**
+ * Modularized by Antigravity
  * Created By EmmyHenz
  * Contact Me on wa.me/2349125042727
  * commands/movie.js
@@ -20,7 +21,6 @@
  *    → If SERIES → shows season list → user types "1" → episode list → user types "5"
  *              → auto-runs .dlmovie <id> 1 5 → downloads + sends MP4
  */
-
 const axios = require('axios')
 const fs    = require('fs')
 const path  = require('path')
@@ -49,6 +49,7 @@ async function apiGet(path_) {
 // ── Main exported function ────────────────────────────────────────────────────
 // main.js calls: movieCommand(sock, chatId, message, argsArray)
 // We adapt to also support the command routing internally
+const originalCommand = movieCommand;
 async function movieCommand(sock, chatId, message, argsOrCommand, _senderId) {
     const from   = chatId
     const m      = message
@@ -534,5 +535,18 @@ module.exports = {
     async exec(sock, chatId, msg, args, rawText) {
         const command = rawText.split(' ')[0].slice(1).toLowerCase();
         return movieCommand(sock, chatId, msg, args, command);
+    }
+};
+
+
+module.exports = {
+    name: 'movie',
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

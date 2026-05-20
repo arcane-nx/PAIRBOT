@@ -1,7 +1,7 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = function formatTime(seconds) {
+function formatTime(seconds) {
     const days = Math.floor(seconds / (24 * 60 * 60));
     seconds = seconds % (24 * 60 * 60);
     const hours = Math.floor(seconds / (60 * 60));
@@ -98,11 +98,16 @@ https://bot-connect.emmyhenztech.site
     }
 }
 
-pingCommand;
+const originalCommand = pingCommand;
 
 module.exports = {
     name: 'ping',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

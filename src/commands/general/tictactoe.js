@@ -1,16 +1,12 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
-const TicTacToe = require('../lib/tictactoe');
+const TicTacToe = require('../../lib/tictactoe');
 
 // Store games globally
 const games = {};
 
+const originalCommand = tictactoeCommand;
 async function tictactoeCommand(sock, chatId, senderId, text) {
     try {
         // Check if player is already in a game
@@ -219,10 +215,12 @@ ${!winner && !isTie ? '• Type a number (1-9) to make your move\n• Type *surr
 
 module.exports = {
     name: 'tictactoe',
-    alias: ['ttt'],
-    handleTicTacToeMove,
-    async exec(sock, chatId, msg, args) {
-        const senderId = msg.key.participant || msg.key.remoteJid;
-        return tictactoeCommand(sock, chatId, senderId, args.join(' '));
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

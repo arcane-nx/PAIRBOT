@@ -10,7 +10,7 @@ const commandEmojis = [
 ];
 
 // Path for storing auto-reaction state
-const USER_GROUP_DATA = path.join(__dirname, '../data/userGroupData.json');
+const USER_GROUP_DATA = path.join(__dirname, '../../data/userGroupData.json');
 
 // Load auto-reaction state from file
 function loadAutoReactionState() {

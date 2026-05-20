@@ -1,3 +1,6 @@
+/**
+ * Modularized by Antigravity
+ */
 const fs = require('fs');
 const path = require('path');
 
@@ -51,10 +54,8 @@ function topMembers(sock, chatId, isGroup) {
 
 module.exports = {
     name: 'topmembers',
-    alias: ['top', 'topstats'],
-    incrementMessageCount,
-    topMembers,
-    async exec(sock, chatId, msg, args) {
-        return topMembers(sock, chatId, chatId.endsWith('@g.us'));
+    async exec(sock, chatId, msg, args, rawText) {
+        const isGroup = chatId.endsWith('@g.us');
+        return topMembers(sock, chatId, isGroup);
     }
 };

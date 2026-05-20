@@ -1,12 +1,7 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
- * Created By EmmyHenz
- * Contact Me on wa.me/2349125042727
-*/
-
-const isAdmin = require('../lib/isAdmin');
+const isAdmin = require('../../lib/isAdmin');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const fs = require('fs');
 const path = require('path');
@@ -125,12 +120,16 @@ async function tagCommand(sock, chatId, senderId, messageText, replyMessage, msg
     }
 }
 
-tagCommand;
-
+const originalCommand = tagCommand;
 
 module.exports = {
     name: 'tag',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

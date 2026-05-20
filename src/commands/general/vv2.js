@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
- * Created By EmmyHenz — commands/vv2.js
- * FIXED: Uses RAM buffer (no disk writes = no ENOSPC ever)
- * Sends view once media to OWNER DM (private) like save command
-*/
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const channelInfo = {
@@ -112,11 +107,16 @@ async function vv2Command(sock, chatId, message) {
     }
 }
 
-vv2Command;
+const originalCommand = vv2Command;
 
 module.exports = {
     name: 'vv2',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

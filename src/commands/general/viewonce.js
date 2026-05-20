@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
- * Created By EmmyHenz — commands/viewonce.js
- * FIXED: Uses RAM buffer, no ENOSPC
- * .vv — reveals view once in current chat
-*/
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const channelInfo = {
@@ -65,12 +60,16 @@ async function viewOnceCommand(sock, chatId, message) {
         await sock.sendMessage(chatId, { text: '🛑 Error: ' + e.message, ...channelInfo }, { quoted: message });
     }
 }
-viewOnceCommand;
-
+const originalCommand = viewOnceCommand;
 
 module.exports = {
     name: 'viewonce',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

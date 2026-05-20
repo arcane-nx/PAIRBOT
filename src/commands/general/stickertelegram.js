@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const fetch = require('node-fetch');
 const delay = time => new Promise(res => setTimeout(res, time));
 const fs = require('fs');
@@ -13,7 +8,7 @@ const path = require('path');
 const webp = require('node-webpmux');
 const crypto = require('crypto');
 const { exec } = require('child_process');
-const settings = require('../settings');
+const settings = require('../../config/settings');
 
 async function stickerTelegramCommand(sock, chatId, msg) {
     try {
@@ -189,12 +184,16 @@ async function stickerTelegramCommand(sock, chatId, msg) {
     }
 }
 
-stickerTelegramCommand;
-
+const originalCommand = stickerTelegramCommand;
 
 module.exports = {
     name: 'stickertelegram',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

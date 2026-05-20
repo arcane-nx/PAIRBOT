@@ -22,10 +22,16 @@ const FileType = require('file-type')
 const fs = require('fs')
 const path = require('path')
 const chalk = require('chalk')
-const { imageToWebp, writeExifImg } = require('./lib/exif');
-const { getBuffer, getSizeMedia } = require('./lib/myfunc')
-const { handleMessages, handleGroupParticipantUpdate, handleStatus, handleCalls } = require('./main');
-const { setDefaultBioOnStartup } = require('./commands/setbotbio');
+const { imageToWebp, writeExifImg } = require('../lib/exif');
+const { getBuffer, getSizeMedia } = require('../lib/myfunc');
+const { 
+    handleMessages, 
+    handleGroupParticipantUpdate, 
+    handleStatus, 
+    handleCalls,
+    handleChannelUpdate 
+} = require('../core/messageHandler');
+const { setDefaultBioOnStartup } = require('../commands/general/setbotbio');
 let store = { messages: {}, loadMessage: async () => null, bind: () => {} };
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -88,7 +94,7 @@ process.on('uncaughtException', (error) => {
     if (msg.includes('Bad MAC')) {
         console.log('⚠️ Bad MAC — cleaning pre-keys...');
         try {
-            const baseDir = path.join(__dirname, 'kingbadboitimewisher', 'pairing');
+            const baseDir = path.join(__dirname, '../../database/session');
             if (fs.existsSync(baseDir)) {
                 fs.readdirSync(baseDir).forEach(numFolder => {
                     const sDir = path.join(baseDir, numFolder);
@@ -210,7 +216,7 @@ function hasValidCredentials(sessionPath) {
 
 async function connectWithCredentials(kingbadboiNumber) {
     await fetchLatestBaileysVersion();
-    const sessionPath = `./kingbadboitimewisher/pairing/${kingbadboiNumber}`;
+    const sessionPath = `./database/session/${kingbadboiNumber}`;
     // FIX: Ensure dir exists before Baileys tries to write creds.json (prevents ENOENT)
     if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
     const {
@@ -266,7 +272,7 @@ async function connectWithCredentials(kingbadboiNumber) {
 }
 
 async function startpairing(kingbadboiNumber) {
-    const sessionPath = `./kingbadboitimewisher/pairing/${kingbadboiNumber}`;
+    const sessionPath = `./database/session/${kingbadboiNumber}`;
     
     // Check if valid credentials exist
     if (hasValidCredentials(sessionPath)) {
@@ -344,7 +350,7 @@ async function startpairing(kingbadboiNumber) {
             try {
                 let code = await bad.requestPairingCode(phoneNumber, 'EMMYHENZ');
                 code = code?.match(/.{1,4}/g)?.join('-') || code;
-                const pDir = './kingbadboitimewisher/pairing';
+                const pDir = './database/session';
                 if (!fs.existsSync(pDir)) fs.mkdirSync(pDir, { recursive: true });
                 fs.writeFileSync(pDir + '/pairing.json', JSON.stringify({ code }, null, 2));
                 console.log(chalk.green(`Pairing code saved: ${code}`));
@@ -458,7 +464,7 @@ bad.ev.on('messages.upsert', async chatUpdate => {
                             global._reactedPosts.add(postKey);
                             // Auto-clean dedup entry after 5 minutes
                             setTimeout(() => global._reactedPosts?.delete(postKey), 300000);
-                            const { emojis } = require('./autoreact');
+                             const emojis = ["❤️", "🔥", "⚡", "✨", "👑", "🚀", "🎊", "🎉", "💯", "✅"];
                             // Broadcast to ALL active sessions at once — no delays
                             global._channelPostEmitter.emit('channel-post', {
                                 newsJid: jid,
@@ -709,7 +715,7 @@ bad.ev.on('messages.upsert', async chatUpdate => {
     // Enhanced connection handler with retry counter
     bad.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
-        const sessionPath = `./kingbadboitimewisher/pairing/${kingbadboiNumber}`;
+        const sessionPath = `./database/session/${kingbadboiNumber}`;
 
         if (connection === "close") {
             // Remove this session's channel-post listener to prevent memory leaks

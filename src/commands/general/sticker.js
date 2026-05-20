@@ -1,16 +1,11 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const { downloadMediaMessage } = require("@whiskeysockets/baileys")
 const { exec } = require("child_process")
 const fs = require("fs")
 const path = require("path")
-const settings = require("../settings")
+const settings = require('../../config/settings')
 const webp = require("node-webpmux")
 const crypto = require("crypto")
 
@@ -202,12 +197,16 @@ async function stickerCommand(sock, chatId, message) {
   }
 }
 
-stickerCommand
-
+const originalCommand = stickerCommand
 
 module.exports = {
     name: 'sticker',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

@@ -1,11 +1,6 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
@@ -207,6 +202,8 @@ async function handleChatbotCommand(sock, chatId, message, match) {
         quoted: message
     });
 }
+
+const originalCommand = handleChatbotCommand;
 
 async function handleChatbotResponse(sock, chatId, message, userMessage, senderId) {
     const data = loadUserGroupData();
@@ -422,11 +419,14 @@ You:
     }
 }
 
-
 module.exports = {
     name: 'chatbot',
-    handleChatbotResponse,
-    async exec(sock, chatId, msg, args) {
-        return handleChatbotCommand(sock, chatId, msg, args.join(' '));
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

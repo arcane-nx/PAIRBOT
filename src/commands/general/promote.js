@@ -1,12 +1,8 @@
 /**
  * Modularized by Antigravity
  */
-const originalCommand = /**
-   * Created By EmmyHenz
-   * Contact Me on wa.me/2349125042727
-*/
-
 // Function to handle manual promotions via command
+const originalCommand = promoteCommand;
 async function promoteCommand(sock, chatId, mentionedJids, message) {
     let userToPromote = [];
     
@@ -98,10 +94,14 @@ async function handlePromotionEvent(sock, groupId, participants, author) {
 
 { promoteCommand, handlePromotionEvent };
 
-
 module.exports = {
     name: 'promote',
-    async exec(sock, chatId, msg, args) {
-        return originalCommand(sock, chatId, msg, args);
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
     }
 };

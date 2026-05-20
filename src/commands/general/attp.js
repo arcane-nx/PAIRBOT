@@ -1,7 +1,11 @@
+/**
+ * Modularized by Antigravity
+ */
 const { spawn } = require('child_process');
 const fs = require('fs');
-const { writeExifVid } = require('../lib/exif');
+const { writeExifVid } = require('../../lib/exif');
 
+const originalCommand = attpCommand;
 async function attpCommand(sock, chatId, message) {
     const userMessage = message.message.conversation || message.message.extendedTextMessage?.text || '';
     const text = userMessage.split(' ').slice(1).join(' ');
@@ -80,3 +84,15 @@ function renderBlinkingVideoWithFfmpeg(text) {
         });
     });
 }
+
+module.exports = {
+    name: 'attp',
+    async exec(sock, chatId, msg, args, rawText) {
+        if (typeof originalCommand === 'function') {
+            return originalCommand(sock, chatId, msg, args, rawText);
+        } else if (typeof originalCommand === 'object' && originalCommand !== null) {
+            const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
+            if (func) return func(sock, chatId, msg, args, rawText);
+        }
+    }
+};

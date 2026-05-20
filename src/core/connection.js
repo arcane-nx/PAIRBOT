@@ -10,7 +10,7 @@ const path = require("path");
 const fs = require("fs");
 
 async function connectToWhatsApp(onMessage, onConnectionUpdate, onCredsUpdate) {
-    const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, "../../database/auth.json"));
+    const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, "../../database/session"));
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
