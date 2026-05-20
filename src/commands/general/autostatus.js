@@ -174,5 +174,6 @@ module.exports = {
             const func = originalCommand.exec || Object.values(originalCommand).find(v => typeof v === 'function');
             if (func) return func(sock, chatId, msg, args, rawText);
         }
-    }
+    },
+    handleStatusUpdate
 };

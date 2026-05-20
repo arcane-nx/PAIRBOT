@@ -14,7 +14,7 @@ module.exports = {
       NODE_ENV: "production"
     },
     combine_logs: true,
-    time: true,
+    time: false,
     restart_delay: 5000,
     exp_backoff_restart_delay: 100,
     max_restarts: 50,

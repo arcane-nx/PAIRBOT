@@ -79,9 +79,62 @@ async function handleAntitagCommand(sock, chatId, userMessage, senderId, isSende
     }
 }
 
+async function handleTagDetection(sock, chatId, message, senderId) {
+    try {
+        const antitagConfig = await getAntitag(chatId, 'on');
+        if (!antitagConfig || !antitagConfig.enabled) return;
+
+        const userMessage = (
+            message.message?.conversation ||
+            message.message?.extendedTextMessage?.text ||
+            message.message?.imageMessage?.caption ||
+            message.message?.videoMessage?.caption ||
+            ""
+        ).toLowerCase();
+
+        if (userMessage.includes('@everyone') || userMessage.includes('@here') || userMessage.includes('@all')) {
+            const groupMetadata = await sock.groupMetadata(chatId);
+            const participants = groupMetadata.participants;
+            const isSenderAdmin = participants.some(p => p.id === senderId && (p.admin === 'admin' || p.admin === 'superadmin'));
+
+            if (!isSenderAdmin) {
+                const action = antitagConfig.action || 'delete';
+                
+                if (action === 'delete') {
+                    await sock.sendMessage(chatId, { delete: message.key });
+                    await sock.sendMessage(chatId, {
+                        text: `🚫 *Antitag Detected!*\n\nMessage from @${senderId.split('@')[0]} was deleted for tagging all members.`,
+                        mentions: [senderId]
+                    });
+                } else if (action === 'kick') {
+                    const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+                    const isBotAdmin = participants.some(p => p.id === botId && (p.admin === 'admin' || p.admin === 'superadmin'));
+
+                    if (isBotAdmin) {
+                        await sock.sendMessage(chatId, { delete: message.key });
+                        await sock.groupParticipantsUpdate(chatId, [senderId], 'remove');
+                        await sock.sendMessage(chatId, {
+                            text: `🚫 *Antitag Detected!*\n\n@${senderId.split('@')[0]} has been kicked for tagging all members.`,
+                            mentions: [senderId]
+                        });
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error in tag detection:', error);
+    }
+}
+
 module.exports = {
     name: 'antitag',
     async exec(sock, chatId, msg, args, rawText) {
-        return handleAntitagCommand(sock, chatId, msg, args, rawText);
-    }
+        const senderId = msg.key.participant || msg.key.remoteJid;
+        const groupMetadata = await sock.groupMetadata(chatId);
+        const participants = groupMetadata.participants;
+        const isSenderAdmin = participants.some(p => p.id === senderId && (p.admin === 'admin' || p.admin === 'superadmin'));
+
+        return handleAntitagCommand(sock, chatId, rawText, senderId, isSenderAdmin || msg.key.fromMe, msg);
+    },
+    handleTagDetection
 };

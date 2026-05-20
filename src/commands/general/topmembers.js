@@ -57,5 +57,6 @@ module.exports = {
     async exec(sock, chatId, msg, args, rawText) {
         const isGroup = chatId.endsWith('@g.us');
         return topMembers(sock, chatId, isGroup);
-    }
+    },
+    incrementMessageCount
 };

@@ -18,7 +18,23 @@ const channelInfo = {
 
 const configPath = path.join(__dirname, '../../../database/auth.json');
 
-const originalCommand = autotypingCommand;
+function isAutoTypingEnabled() {
+    try {
+        const config = JSON.parse(fs.readFileSync(configPath));
+        return !!config.autoTypingEnabled;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function handleAutoTyping(sock, chatId) {
+    try {
+        if (isAutoTypingEnabled()) {
+            await sock.sendPresenceUpdate('composing', chatId);
+        }
+    } catch (e) {}
+}
+
 async function autotypingCommand(sock, chatId, msg, args) {
     try {
         // Check if sender is owner
@@ -38,7 +54,7 @@ async function autotypingCommand(sock, chatId, msg, args) {
 
         // If no arguments, show usage
         if (!action) {
-            const status = config.enabled ? 'enabled' : 'disabled';
+            const status = config.autoTypingEnabled ? 'enabled' : 'disabled';
             await sock.sendMessage(chatId, { 
                 text: `⌨️ *𝐀𝐔𝐓𝐎-𝐓𝐘𝐏𝐈𝐍𝐆 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒*\n\nCurrent status: ${status}\n\n*Usage:* .autotyping on | off\n\n*Example:* .autotyping on`,
                 ...channelInfo
@@ -50,12 +66,12 @@ async function autotypingCommand(sock, chatId, msg, args) {
 
         // Handle on/off commands
         if (action === 'on') {
-            config.enabled = true;
-            fs.writeFileSync(configPath, JSON.stringify(config));
+            config.autoTypingEnabled = true;
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             responseText = '✅ *Auto-typing is now enabled*\n\nBot will automatically show typing indicator when processing messages.';
         } else if (action === 'off') {
-            config.enabled = false;
-            fs.writeFileSync(configPath, JSON.stringify(config));
+            config.autoTypingEnabled = false;
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             responseText = '❌ *Auto-typing is now disabled*\n\nBot will no longer show typing indicator automatically.';
         } else {
             responseText = `❌ Invalid option!\n\n*Usage:* .autotyping on | off\n\n*Example:* .autotyping on`;
@@ -79,5 +95,7 @@ module.exports = {
     name: 'autotyping',
     async exec(sock, chatId, msg, args, rawText) {
         return autotypingCommand(sock, chatId, msg, args, rawText);
-    }
+    },
+    isAutoTypingEnabled,
+    handleAutoTyping
 };
