@@ -6,3 +6,4 @@ tmp/
 .antigravitycli/
 data/*.json
 !data/userGroupData.json
+database/
