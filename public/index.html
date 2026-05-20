@@ -3,513 +3,1260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>𝐄𝐌𝐌𝐘𝐇𝐄𝐍𝐙-WHATSAPP BOT PAIR</title>
+    <meta name="description" content="EMMYHENZ WhatsApp Bot Pairing System — Generate pairing codes to connect your WhatsApp account securely and manage active sessions.">
+    <title>𝐄𝐌𝐌𝐘𝐇𝐄𝐍𝐙 - WhatsApp Bot Pairing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
+        /* ── Reset & Base ───────────────────────────────── */
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-deep: #0a0e1a;
+            --bg-surface: #131832;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-green: #25D366;
+            --accent-teal: #00BFA5;
+            --text-primary: #e8eaf6;
+            --text-secondary: rgba(255, 255, 255, 0.5);
+            --error: #ff5252;
+            --success: #69f0ae;
+            --info: #448aff;
+            --font-base: 15px;
+        }
+
+        html {
+            font-size: var(--font-base);
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #25D366, #128C7E, #075E54);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-surface) 100%);
+            color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: #25D366;
+        /* ── Animated Background Orbs ──────────────────── */
+        .orb {
+            position: fixed;
             border-radius: 50%;
-            margin: 0 auto 20px;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
+            will-change: transform, opacity;
+        }
+
+        .orb--green {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(37, 211, 102, 0.18) 0%, transparent 70%);
+            top: -80px;
+            left: -120px;
+            animation: orbDriftGreen 15s ease-in-out infinite alternate;
+        }
+
+        .orb--teal {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 191, 165, 0.14) 0%, transparent 70%);
+            bottom: -100px;
+            right: -140px;
+            animation: orbDriftTeal 18s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbDriftGreen {
+            0%   { transform: translate(0, 0) scale(1);   opacity: 0.7; }
+            25%  { transform: translate(60px, 40px) scale(1.1); opacity: 1; }
+            50%  { transform: translate(30px, 80px) scale(0.95); opacity: 0.8; }
+            75%  { transform: translate(80px, 20px) scale(1.05); opacity: 0.9; }
+            100% { transform: translate(10px, 60px) scale(1);   opacity: 0.7; }
+        }
+
+        @keyframes orbDriftTeal {
+            0%   { transform: translate(0, 0) scale(1);   opacity: 0.6; }
+            25%  { transform: translate(-50px, -30px) scale(1.08); opacity: 0.9; }
+            50%  { transform: translate(-80px, -60px) scale(0.92); opacity: 0.7; }
+            75%  { transform: translate(-30px, -80px) scale(1.12); opacity: 1; }
+            100% { transform: translate(-60px, -20px) scale(1);   opacity: 0.6; }
+        }
+
+        /* ── Toast Notifications ───────────────────────── */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 280px;
+            max-width: 400px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: rgba(20, 24, 50, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            color: var(--text-primary);
+            font-size: 0.87rem;
+            pointer-events: all;
+            transform: translateX(120%);
+            opacity: 0;
+            animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .toast.removing {
+            animation: toastOut 0.35s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+        }
+
+        .toast__icon {
+            flex-shrink: 0;
+            font-size: 1.15rem;
+        }
+
+        .toast__message {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .toast__close {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px;
+            line-height: 1;
+            transition: color 0.2s;
+            width: auto;
+        }
+
+        .toast__close:hover {
+            color: var(--text-primary);
+        }
+
+        .toast--success { border-left: 3px solid var(--success); }
+        .toast--error   { border-left: 3px solid var(--error); }
+        .toast--info    { border-left: 3px solid var(--info); }
+
+        @keyframes toastIn {
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            to { transform: translateX(120%); opacity: 0; }
+        }
+
+        /* ── Delete Confirmation Modal ─────────────────── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 8000;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
         }
 
-        h1 {
-            color: #075E54;
-            margin-bottom: 10px;
-            font-size: 28px;
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: rgba(20, 26, 56, 0.95);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 36px 32px 28px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.85);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
             font-weight: 700;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
             margin-bottom: 8px;
-            color: #075E54;
-            font-weight: 600;
-            font-size: 14px;
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
+        .modal-body {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 0;
             border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f9f9f9;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #25D366;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
-        }
-
-        .phone-hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            text-align: left;
-        }
-
-        .phone-hint strong {
-            color: #dc3545;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s;
+        }
+
+        .modal-btn--cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+        }
+
+        .modal-btn--cancel:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .modal-btn--delete {
+            background: var(--error);
+            border: none;
+            color: #fff;
+        }
+
+        .modal-btn--delete:hover {
+            background: #e04040;
+            box-shadow: 0 4px 20px rgba(255, 82, 82, 0.35);
+        }
+
+        /* ── Main Container ────────────────────────────── */
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+
+        /* ── Header ────────────────────────────────────── */
+        .header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header__logo {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: rgba(37, 211, 102, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin: 0 auto 18px;
+            box-shadow: 0 0 30px rgba(37, 211, 102, 0.2), 0 0 60px rgba(37, 211, 102, 0.08);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(37, 211, 102, 0.2), 0 0 60px rgba(37, 211, 102, 0.08); }
+            50%      { box-shadow: 0 0 40px rgba(37, 211, 102, 0.35), 0 0 80px rgba(37, 211, 102, 0.15); }
+        }
+
+        .header__name {
+            font-size: 1.65rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .header__subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-bottom: 14px;
+        }
+
+        .session-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37, 211, 102, 0.12);
+            border: 1px solid rgba(37, 211, 102, 0.25);
+            color: var(--accent-green);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 50px;
+        }
+
+        .session-badge__dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        /* ── Glass Card ────────────────────────────────── */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 28px 24px;
+            margin-bottom: 20px;
+        }
+
+        /* ── Floating Label Input ──────────────────────── */
+        .input-group {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .input-group__field {
+            width: 100%;
+            padding: 18px 16px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+            -webkit-appearance: none;
+        }
+
+        .input-group__field::placeholder {
+            color: transparent;
+        }
+
+        .input-group__field:focus {
+            border-color: rgba(37, 211, 102, 0.5);
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.15);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .input-group__label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.93rem;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: left center;
+        }
+
+        .input-group__field:focus + .input-group__label,
+        .input-group__field.has-value + .input-group__label {
+            top: 12px;
+            transform: translateY(0) scale(0.78);
+            color: var(--accent-green);
+            font-weight: 500;
+        }
+
+        .input-hint {
+            font-size: 0.77rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            padding-left: 4px;
+            line-height: 1.5;
+        }
+
+        .input-hint span {
+            color: rgba(255, 255, 255, 0.3);
+            margin: 0 3px;
+        }
+
+        /* ── Generate Button ───────────────────────────── */
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-teal));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
             position: relative;
             overflow: hidden;
+            transition: opacity 0.3s, transform 0.2s, box-shadow 0.3s;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        button:hover:not(:disabled) {
+        .btn-generate::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+            transition: none;
+            pointer-events: none;
+        }
+
+        .btn-generate:hover:not(:disabled)::after {
+            animation: shimmer 1.2s ease forwards;
+        }
+
+        .btn-generate:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+            box-shadow: 0 8px 28px rgba(37, 211, 102, 0.3);
         }
 
-        button:disabled {
-            opacity: 0.6;
+        .btn-generate:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.55;
             cursor: not-allowed;
             transform: none;
         }
 
-        .loading {
+        @keyframes shimmer {
+            to { left: 130%; }
+        }
+
+        .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+            animation: spin 0.75s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .result {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 10px;
+        /* ── Pairing Code Display ──────────────────────── */
+        .code-display {
+            margin-top: 20px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease, margin 0.4s;
+        }
+
+        .code-display.visible {
+            max-height: 220px;
+            opacity: 1;
+        }
+
+        .code-display__box {
+            border: 2px dashed rgba(37, 211, 102, 0.35);
+            border-radius: 14px;
+            padding: 22px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+            position: relative;
+        }
+
+        .code-display__box:hover {
+            border-color: rgba(37, 211, 102, 0.6);
+            background: rgba(37, 211, 102, 0.04);
+        }
+
+        .code-display__code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            user-select: all;
+        }
+
+        .code-display__hint {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .code-display__copied {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.72rem;
+            color: var(--success);
             font-weight: 600;
-            display: none;
+            opacity: 0;
+            transition: opacity 0.25s;
         }
 
-        .result.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+        .code-display__copied.show {
+            opacity: 1;
         }
 
-        .result.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+        /* ── Sessions Section ──────────────────────────── */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 32px 0 20px;
         }
 
-        .pairing-code {
-            font-size: 24px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border: 2px dashed #25D366;
-            border-radius: 8px;
-            color: #075E54;
+        .divider__line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.07);
         }
 
-        .sessions-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid #f0f0f0;
+        .divider__label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
         }
 
         .sessions-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
 
         .sessions-title {
-            font-size: 20px;
-            color: #075E54;
+            font-size: 1.05rem;
             font-weight: 600;
         }
 
-        .refresh-btn {
-            padding: 8px 16px;
-            background: #128C7E;
-            color: white;
-            border: none;
-            border-radius: 6px;
+        .btn-refresh {
+            width: 40px;
+            height: 40px;
+            min-height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            font-size: 1rem;
             cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s ease;
-        }
-
-        .refresh-btn:hover {
-            background: #075E54;
-        }
-
-        .sessions-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .session-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #25D366;
+            justify-content: center;
+            transition: background 0.2s, border-color 0.2s, transform 0.6s;
+            padding: 0;
         }
 
-        .session-info {
-            text-align: left;
+        .btn-refresh:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
         }
 
-        .session-phone {
-            font-weight: 600;
-            color: #075E54;
-            font-size: 16px;
+        .btn-refresh.spinning {
+            animation: spinOnce 0.6s ease;
         }
 
-        .session-status {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
+        @keyframes spinOnce {
+            to { transform: rotate(360deg); }
         }
 
-        .session-time {
-            font-size: 11px;
-            color: #999;
-            margin-top: 2px;
+        /* ── Session Cards ─────────────────────────────── */
+        .sessions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
 
-        .delete-btn {
-            padding: 6px 12px;
-            background: #dc3545;
-            color: white;
-            border: none;
+        .sessions-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sessions-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sessions-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
+        }
+
+        .session-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            transition: background 0.2s, border-color 0.2s;
+            animation: cardSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .session-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .session-card.removing {
+            animation: cardSlideOut 0.35s ease forwards;
+        }
+
+        @keyframes cardSlideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes cardSlideOut {
+            to { opacity: 0; transform: translateX(30px); height: 0; padding: 0 16px; margin: 0; border-width: 0; }
+        }
+
+        .session-card__left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .session-card__dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            flex-shrink: 0;
+            animation: dotPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 6px rgba(37, 211, 102, 0.4);
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1;   box-shadow: 0 0 6px rgba(37, 211, 102, 0.4); }
+            50%      { opacity: 0.5; box-shadow: 0 0 2px rgba(37, 211, 102, 0.2); }
+        }
+
+        .session-card__info {
+            min-width: 0;
+        }
+
+        .session-card__phone {
+            font-weight: 600;
+            font-size: 0.93rem;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .session-card__meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .session-card__status {
+            font-size: 0.73rem;
+            font-weight: 500;
+            color: var(--accent-green);
+            background: rgba(37, 211, 102, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .session-card__time {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-delete {
+            width: 38px;
+            height: 38px;
+            min-height: 38px;
+            min-width: 38px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            color: var(--error);
+            font-size: 0.95rem;
             cursor: pointer;
-            font-size: 12px;
-            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+            flex-shrink: 0;
+            padding: 0;
         }
 
-        .delete-btn:hover {
-            background: #c82333;
+        .btn-delete:hover {
+            background: var(--error);
+            border-color: var(--error);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(255, 82, 82, 0.3);
         }
 
-        .no-sessions {
+        /* ── No Sessions State ─────────────────────────── */
+        .empty-state {
             text-align: center;
-            color: #666;
-            padding: 30px;
-            font-style: italic;
+            padding: 36px 20px;
+            color: var(--text-secondary);
         }
 
+        .empty-state__icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            opacity: 0.4;
+        }
+
+        .empty-state__text {
+            font-size: 0.88rem;
+        }
+
+        /* ── Mobile Responsive ─────────────────────────── */
         @media (max-width: 600px) {
-            .container {
-                padding: 30px 20px;
-                margin: 10px;
+            html { font-size: 14px; }
+
+            .wrapper { padding: 28px 14px 50px; }
+
+            .glass-card { padding: 22px 16px; }
+
+            .header__logo {
+                width: 64px;
+                height: 64px;
+                font-size: 1.8rem;
             }
 
-            h1 {
-                font-size: 24px;
-            }
+            .header__name { font-size: 1.4rem; }
 
-            .session-item {
+            .code-display__code { font-size: 1.4rem; letter-spacing: 3px; }
+
+            .session-card {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 12px;
             }
 
-            .delete-btn {
-                margin-top: 10px;
+            .session-card .btn-delete {
                 align-self: flex-end;
+                width: 100%;
+                min-height: 44px;
+                border-radius: 10px;
+                justify-content: center;
+                gap: 6px;
             }
+
+            .modal-card { padding: 28px 20px 22px; }
+
+            #toastContainer {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+
+            .toast { min-width: 0; max-width: 100%; }
+
+            .orb--green { width: 300px; height: 300px; }
+            .orb--teal  { width: 320px; height: 320px; }
+        }
+
+        /* ── Loading skeleton ──────────────────────────── */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: skeletonWave 1.5s ease-in-out infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes skeletonWave {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">📱</div>
-        <h1>WhatsApp Pairing</h1>
-        <p class="subtitle">Generate pairing codes for WhatsApp connections</p>
-        
-        <form id="pairingForm">
-            <div class="form-group">
-                <label for="phoneNumber">Phone Number:</label>
-                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="e.g., 2348140825959" required>
-                <div class="phone-hint">
-                    <strong>Rules:</strong> Numbers only • No letters • Cannot start with 0 • Format: 2348140825959
+
+    <!-- Background Orbs -->
+    <div class="orb orb--green" aria-hidden="true"></div>
+    <div class="orb orb--teal" aria-hidden="true"></div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" aria-live="polite"></div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-card">
+            <div class="modal-icon">⚠️</div>
+            <div class="modal-title">Delete Session?</div>
+            <div class="modal-body" id="modalBody">
+                This will disconnect the session and remove all session data.
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn--cancel" id="modalCancelBtn" type="button">Cancel</button>
+                <button class="modal-btn modal-btn--delete" id="modalDeleteBtn" type="button">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="wrapper">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header__logo" id="headerLogo">📱</div>
+            <h1 class="header__name" id="botName">EMMYHENZ BOT</h1>
+            <p class="header__subtitle">Generate pairing codes for WhatsApp connections</p>
+            <div class="session-badge" id="sessionBadge" style="display:none;">
+                <span class="session-badge__dot"></span>
+                <span id="sessionBadgeText">0/0</span> sessions
+            </div>
+        </header>
+
+        <!-- Pairing Form Card -->
+        <div class="glass-card">
+            <form id="pairingForm" autocomplete="off">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        class="input-group__field"
+                        placeholder="Phone Number"
+                        inputmode="numeric"
+                        autocomplete="off"
+                    >
+                    <label for="phoneNumber" class="input-group__label">Phone Number</label>
+                </div>
+                <div class="input-hint">
+                    Numbers only <span>•</span> No leading zero <span>•</span> Format: 2348140825959
+                </div>
+                <button type="submit" class="btn-generate" id="generateBtn">
+                    Generate Pairing Code
+                </button>
+            </form>
+
+            <!-- Pairing Code Result -->
+            <div class="code-display" id="codeDisplay">
+                <div class="code-display__box" id="codeBox" title="Click to copy">
+                    <span class="code-display__copied" id="copiedTag">✅ Copied!</span>
+                    <div class="code-display__code" id="pairingCode"></div>
+                    <div class="code-display__hint">Enter this code in your WhatsApp app · Click to copy</div>
                 </div>
             </div>
-            
-            <button type="submit" id="submitBtn">
-                Generate Pairing Code
-            </button>
-        </form>
-
-        <div id="result" class="result">
-            <div id="resultMessage"></div>
         </div>
 
-        <div class="sessions-section">
+        <!-- Sessions Divider -->
+        <div class="divider">
+            <div class="divider__line"></div>
+            <span class="divider__label">Active Sessions</span>
+            <div class="divider__line"></div>
+        </div>
+
+        <!-- Sessions Section -->
+        <div class="glass-card" style="padding-bottom: 20px;">
             <div class="sessions-header">
-                <h3 class="sessions-title">Active Sessions</h3>
-                <button class="refresh-btn" onclick="loadSessions()">🔄 Refresh</button>
+                <h2 class="sessions-title">Sessions</h2>
+                <button type="button" class="btn-refresh" id="refreshBtn" title="Refresh sessions">🔄</button>
             </div>
-            <div id="sessionsList" class="sessions-list">
-                <div class="no-sessions">Loading sessions...</div>
+            <div class="sessions-list" id="sessionsList">
+                <div class="empty-state">
+                    <div class="empty-state__icon">📡</div>
+                    <div class="empty-state__text">Loading sessions…</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        /* ──────────────────────────────────────────────────
+           State
+        ────────────────────────────────────────────────── */
         let isSubmitting = false;
+        let deleteTarget = null;
+        let sessionsRefreshTimer = null;
 
-        document.getElementById('pairingForm').addEventListener('submit', async function(e) {
+        /* ──────────────────────────────────────────────────
+           DOM References
+        ────────────────────────────────────────────────── */
+        const $ = id => document.getElementById(id);
+        const phoneInput     = $('phoneNumber');
+        const pairingForm    = $('pairingForm');
+        const generateBtn    = $('generateBtn');
+        const codeDisplay    = $('codeDisplay');
+        const pairingCodeEl  = $('pairingCode');
+        const codeBox        = $('codeBox');
+        const copiedTag      = $('copiedTag');
+        const sessionsList   = $('sessionsList');
+        const refreshBtn     = $('refreshBtn');
+        const deleteModal    = $('deleteModal');
+        const modalBody      = $('modalBody');
+        const modalCancelBtn = $('modalCancelBtn');
+        const modalDeleteBtn = $('modalDeleteBtn');
+        const sessionBadge   = $('sessionBadge');
+        const sessionBadgeText = $('sessionBadgeText');
+        const botNameEl      = $('botName');
+
+        /* ──────────────────────────────────────────────────
+           Toast System
+        ────────────────────────────────────────────────── */
+        const TOAST_ICONS = { success: '✅', error: '❌', info: 'ℹ️' };
+
+        function showToast(message, type = 'info') {
+            const container = $('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast--${type}`;
+            toast.innerHTML = `
+                <span class="toast__icon">${TOAST_ICONS[type] || 'ℹ️'}</span>
+                <span class="toast__message">${escapeHtml(message)}</span>
+                <button class="toast__close" type="button" aria-label="Close">&times;</button>
+            `;
+
+            const closeBtn = toast.querySelector('.toast__close');
+            const dismiss = () => {
+                if (toast.classList.contains('removing')) return;
+                toast.classList.add('removing');
+                toast.addEventListener('animationend', () => toast.remove(), { once: true });
+            };
+
+            closeBtn.addEventListener('click', dismiss);
+            container.appendChild(toast);
+
+            const autoDismiss = setTimeout(dismiss, 4000);
+            toast.addEventListener('mouseenter', () => clearTimeout(autoDismiss));
+            toast.addEventListener('mouseleave', () => setTimeout(dismiss, 1500));
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        /* ──────────────────────────────────────────────────
+           Floating Label Logic
+        ────────────────────────────────────────────────── */
+        function updateFloatingLabel() {
+            if (phoneInput.value.length > 0) {
+                phoneInput.classList.add('has-value');
+            } else {
+                phoneInput.classList.remove('has-value');
+            }
+        }
+
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+            updateFloatingLabel();
+        });
+
+        phoneInput.addEventListener('change', updateFloatingLabel);
+
+        /* ──────────────────────────────────────────────────
+           Validation
+        ────────────────────────────────────────────────── */
+        function validatePhone(raw) {
+            const cleaned = raw.replace(/\D/g, '');
+            if (!cleaned) {
+                showToast('Please enter a phone number.', 'error');
+                return null;
+            }
+            if (cleaned.startsWith('0')) {
+                showToast('Phone number cannot start with 0.', 'error');
+                return null;
+            }
+            if (cleaned.length < 10) {
+                showToast('Phone number must be at least 10 digits.', 'error');
+                return null;
+            }
+            if (cleaned.length > 15) {
+                showToast('Phone number cannot exceed 15 digits.', 'error');
+                return null;
+            }
+            return cleaned;
+        }
+
+        /* ──────────────────────────────────────────────────
+           Generate Pairing Code
+        ────────────────────────────────────────────────── */
+        pairingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             if (isSubmitting) return;
-            
-            const phoneNumber = document.getElementById('phoneNumber').value.trim();
-            const submitBtn = document.getElementById('submitBtn');
-            const result = document.getElementById('result');
-            const resultMessage = document.getElementById('resultMessage');
-            
-            if (!phoneNumber) {
-                showResult('Please enter a phone number', 'error');
-                return;
-            }
-            
-            // Client-side validation
-            const cleanedNumber = phoneNumber.replace(/\D/g, '');
-            
-            if (cleanedNumber.startsWith('0')) {
-                showResult('Phone numbers cannot start with 0', 'error');
-                return;
-            }
-            
-            if (!/^\d+$/.test(cleanedNumber)) {
-                showResult('Phone numbers can only contain digits', 'error');
-                return;
-            }
-            
-            if (cleanedNumber.length < 10) {
-                showResult('Phone number must be at least 10 digits', 'error');
-                return;
-            }
-            
-            if (cleanedNumber.length > 15) {
-                showResult('Phone number cannot exceed 15 digits', 'error');
-                return;
-            }
-            
+
+            const cleaned = validatePhone(phoneInput.value);
+            if (!cleaned) return;
+
             isSubmitting = true;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading"></span>Generating Code...';
-            result.style.display = 'none';
-            
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner"></span> Generating…';
+            codeDisplay.classList.remove('visible');
+
             try {
-                const response = await fetch('/request-pairing', {
+                const res = await fetch('/request-pairing', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ phoneNumber: cleanedNumber })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: cleaned })
                 });
-                
-                const data = await response.json();
-                
+                const data = await res.json();
+
                 if (data.success) {
-                    resultMessage.innerHTML = `
-                        <div>✅ Pairing code generated successfully!</div>
-                        <div style="margin: 10px 0;">Phone: <strong>+${data.phoneNumber}</strong></div>
-                        <div class="pairing-code">${data.pairingCode}</div>
-                        <div style="font-size: 14px; color: #666;">
-                            Enter this code in your WhatsApp app when prompted
-                        </div>
-                    `;
-                    showResult('', 'success');
-                    
-                    // Clear form and refresh sessions
-                    document.getElementById('phoneNumber').value = '';
-                    setTimeout(() => loadSessions(), 1000);
-                    
+                    pairingCodeEl.textContent = data.pairingCode;
+                    codeDisplay.classList.add('visible');
+                    showToast(`Pairing code generated for +${data.phoneNumber}`, 'success');
+                    phoneInput.value = '';
+                    updateFloatingLabel();
+
+                    if (data.sessionInfo) {
+                        updateBadge(data.sessionInfo.current, data.sessionInfo.limit);
+                    }
+                    setTimeout(loadSessions, 1000);
                 } else {
-                    showResult(data.error || 'Failed to generate pairing code', 'error');
+                    showToast(data.error || 'Failed to generate pairing code.', 'error');
                 }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showResult('Network error. Please check your connection and try again.', 'error');
+            } catch (err) {
+                console.error(err);
+                showToast('Network error. Please check your connection.', 'error');
             } finally {
                 isSubmitting = false;
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Generate Pairing Code';
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'Generate Pairing Code';
             }
         });
-        
-        function showResult(message, type) {
-            const result = document.getElementById('result');
-            const resultMessage = document.getElementById('resultMessage');
-            
-            if (message) {
-                resultMessage.innerHTML = message;
+
+        /* ──────────────────────────────────────────────────
+           Copy Pairing Code
+        ────────────────────────────────────────────────── */
+        codeBox.addEventListener('click', async () => {
+            const code = pairingCodeEl.textContent.trim();
+            if (!code) return;
+            try {
+                await navigator.clipboard.writeText(code);
+                copiedTag.classList.add('show');
+                setTimeout(() => copiedTag.classList.remove('show'), 1800);
+            } catch {
+                showToast('Failed to copy. Please select and copy manually.', 'info');
             }
-            
-            result.className = `result ${type}`;
-            result.style.display = 'block';
-            
-            // Auto hide error messages after 5 seconds
-            if (type === 'error') {
-                setTimeout(() => {
-                    result.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
+        });
+
+        /* ──────────────────────────────────────────────────
+           Load Sessions
+        ────────────────────────────────────────────────── */
         async function loadSessions() {
-            const sessionsList = document.getElementById('sessionsList');
-            sessionsList.innerHTML = '<div class="no-sessions">Loading sessions...</div>';
-            
             try {
-                const response = await fetch('/sessions');
-                const data = await response.json();
-                
-                if (data.success && data.sessions.length > 0) {
-                    sessionsList.innerHTML = data.sessions.map(session => `
-                        <div class="session-item">
-                            <div class="session-info">
-                                <div class="session-phone">+${session.phoneNumber}</div>
-                                <div class="session-status">Status: ${session.status}</div>
-                                <div class="session-time">
-                                    ${session.createdAt ? `Created: ${new Date(session.createdAt).toLocaleString()}` : 
-                                      session.loadedAt ? `Loaded: ${new Date(session.loadedAt).toLocaleString()}` : ''}
-                                </div>
-                            </div>
-                            <button class="delete-btn" onclick="deleteSession('${session.phoneNumber}')">
-                                🗑️ Delete
-                            </button>
-                        </div>
-                    `).join('');
-                } else {
-                    sessionsList.innerHTML = '<div class="no-sessions">No active sessions found</div>';
-                }
-            } catch (error) {
-                console.error('Error loading sessions:', error);
-                sessionsList.innerHTML = '<div class="no-sessions">Error loading sessions</div>';
-            }
-        }
-        
-        async function deleteSession(phoneNumber) {
-            if (!confirm(`Are you sure you want to delete the session for +${phoneNumber}?`)) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/session/${phoneNumber}`, {
-                    method: 'DELETE'
-                });
-                
-                const data = await response.json();
-                
+                const res = await fetch('/sessions');
+                const data = await res.json();
+
                 if (data.success) {
-                    showResult(`Session for +${phoneNumber} deleted successfully`, 'success');
-                    setTimeout(() => loadSessions(), 500);
-                } else {
-                    showResult(data.error || 'Failed to delete session', 'error');
+                    updateBadge(data.total, data.limit);
+
+                    if (data.sessions && data.sessions.length > 0) {
+                        sessionsList.innerHTML = data.sessions.map((s, i) => {
+                            const status = mapStatus(s.status);
+                            const time = s.createdAt
+                                ? formatTime(s.createdAt)
+                                : s.loadedAt
+                                    ? formatTime(s.loadedAt)
+                                    : '';
+                            return `
+                                <div class="session-card" style="animation-delay: ${i * 0.06}s" data-phone="${escapeHtml(s.phoneNumber)}">
+                                    <div class="session-card__left">
+                                        <div class="session-card__dot"></div>
+                                        <div class="session-card__info">
+                                            <div class="session-card__phone">+${escapeHtml(s.phoneNumber)}</div>
+                                            <div class="session-card__meta">
+                                                <span class="session-card__status">${status}</span>
+                                                ${time ? `<span class="session-card__time">${time}</span>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-delete" title="Delete session" onclick="confirmDelete('${escapeHtml(s.phoneNumber)}')">🗑️</button>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        sessionsList.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state__icon">💤</div>
+                                <div class="empty-state__text">No active sessions yet</div>
+                            </div>
+                        `;
+                    }
                 }
-            } catch (error) {
-                console.error('Error deleting session:', error);
-                showResult('Error deleting session', 'error');
+            } catch (err) {
+                console.error('Error loading sessions:', err);
+                sessionsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state__icon">⚠️</div>
+                        <div class="empty-state__text">Could not load sessions</div>
+                    </div>
+                `;
             }
         }
-        
-        // Format phone number input as user types
-        document.getElementById('phoneNumber').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-            e.target.value = value;
-        });
-        
-        // Load sessions when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSessions();
-            
-            // Refresh sessions every 30 seconds
-            setInterval(loadSessions, 30000);
-        });
-        
-        // Add copy functionality for pairing codes
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('pairing-code')) {
-                navigator.clipboard.writeText(e.target.textContent.trim()).then(() => {
-                    const originalText = e.target.textContent;
-                    e.target.textContent = 'Copied!';
-                    setTimeout(() => {
-                        e.target.textContent = originalText;
-                    }, 2000);
-                });
+
+        function mapStatus(raw) {
+            if (!raw) return 'Unknown';
+            const s = raw.toLowerCase();
+            if (s.includes('online') || s === 'connected') return 'Online';
+            if (s.includes('connect')) return 'Connecting';
+            if (s.includes('code')) return 'Code Generated';
+            if (s.includes('load')) return 'Loaded';
+            return raw.charAt(0).toUpperCase() + raw.slice(1);
+        }
+
+        function formatTime(iso) {
+            try {
+                const d = new Date(iso);
+                return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+                       d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+            } catch { return ''; }
+        }
+
+        /* ──────────────────────────────────────────────────
+           Badge
+        ────────────────────────────────────────────────── */
+        function updateBadge(current, limit) {
+            if (current != null && limit != null) {
+                sessionBadgeText.textContent = `${current}/${limit}`;
+                sessionBadge.style.display = 'inline-flex';
             }
+        }
+
+        /* ──────────────────────────────────────────────────
+           Refresh Button
+        ────────────────────────────────────────────────── */
+        refreshBtn.addEventListener('click', () => {
+            refreshBtn.classList.remove('spinning');
+            void refreshBtn.offsetWidth; // reflow to restart animation
+            refreshBtn.classList.add('spinning');
+            loadSessions();
+        });
+
+        /* ──────────────────────────────────────────────────
+           Delete Confirmation Modal
+        ────────────────────────────────────────────────── */
+        function confirmDelete(phone) {
+            deleteTarget = phone;
+            modalBody.textContent = `This will disconnect +${phone} and remove all session data.`;
+            deleteModal.classList.add('active');
+        }
+
+        function closeModal() {
+            deleteModal.classList.remove('active');
+            deleteTarget = null;
+        }
+
+        modalCancelBtn.addEventListener('click', closeModal);
+
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) closeModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && deleteModal.classList.contains('active')) closeModal();
+        });
+
+        modalDeleteBtn.addEventListener('click', async () => {
+            if (!deleteTarget) return;
+            const phone = deleteTarget;
+            closeModal();
+
+            // Animate card removal
+            const card = document.querySelector(`.session-card[data-phone="${phone}"]`);
+            if (card) {
+                card.classList.add('removing');
+            }
+
+            try {
+                const res = await fetch(`/session/${encodeURIComponent(phone)}`, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast(`Session for +${phone} deleted.`, 'success');
+                    if (data.sessionInfo) {
+                        updateBadge(data.sessionInfo.current, data.sessionInfo.limit);
+                    }
+                    setTimeout(loadSessions, 500);
+                } else {
+                    showToast(data.error || 'Failed to delete session.', 'error');
+                    if (card) card.classList.remove('removing');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error while deleting session.', 'error');
+                if (card) card.classList.remove('removing');
+            }
+        });
+
+        /* ──────────────────────────────────────────────────
+           Bot Info
+        ────────────────────────────────────────────────── */
+        async function loadBotInfo() {
+            try {
+                const res = await fetch('/api/bot-info');
+                const data = await res.json();
+                if (data.success && data.botName) {
+                    botNameEl.textContent = data.botName;
+                }
+                if (data.success && data.maxSessions != null) {
+                    // will be updated properly by loadSessions
+                }
+            } catch {
+                // Fallback name is already set in HTML
+            }
+        }
+
+        /* ──────────────────────────────────────────────────
+           Init
+        ────────────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBotInfo();
+            loadSessions();
+            updateFloatingLabel();
+
+            // Auto-refresh every 10 seconds
+            sessionsRefreshTimer = setInterval(loadSessions, 10000);
         });
     </script>
 </body>

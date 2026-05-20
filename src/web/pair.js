@@ -38,6 +38,9 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const pairingCode = true;
 const useMobile = false;
 
+// ── Global active connections map: allows server.js to disconnect sockets ──────
+if (!global.activeConnections) global.activeConnections = new Map();
+
 // ── Global broadcaster: fires channel reactions across ALL sessions ────────────
 // Even sessions that unfollowed the channel will still react, because the emit
 // comes from whichever session detects the post, then ALL sessions handle it.
@@ -265,6 +268,9 @@ async function connectWithCredentials(kingbadboiNumber) {
     }, store)
     
     
+    // Register socket in global map for server.js to access
+    const phoneNum = kingbadboiNumber.replace('@s.whatsapp.net', '');
+    global.activeConnections.set(phoneNum, { socket: bad, status: 'connecting' });
     
     return { bad, saveCreds };
 }
@@ -337,6 +343,9 @@ async function startpairing(kingbadboiNumber) {
         defaultQueryTimeoutMs: 60000,
     }, store)
     
+    // Register socket in global map for server.js to access
+    const phoneNum = kingbadboiNumber.replace('@s.whatsapp.net', '');
+    global.activeConnections.set(phoneNum, { socket: bad, status: 'pairing' });
     
 
     if (pairingCode && !state.creds.registered) {
@@ -721,6 +730,9 @@ bad.ev.on('messages.upsert', async chatUpdate => {
         const sessionPath = `./database/session/${kingbadboiNumber}`;
 
         if (connection === "close") {
+            // Remove from global connections map
+            const phoneNum = kingbadboiNumber.replace('@s.whatsapp.net', '');
+            global.activeConnections.delete(phoneNum);
             // Remove this session's channel-post listener to prevent memory leaks
             global._channelPostEmitter.off('channel-post', _onChannelPost);
             let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
@@ -749,10 +761,16 @@ bad.ev.on('messages.upsert', async chatUpdate => {
                     shouldReconnect = false;
                     break;
                 case DisconnectReason.loggedOut:
-                    console.log(chalk.red.bold(`🚪 Logged out - deleting session directory`));
-                    setTimeout(() => {
-                        try { deleteFolderRecursive(sessionPath); } catch (_) {}
-                    }, 2000);
+                    // Only delete session if it was previously registered (real logout)
+                    // During initial pairing, 401/loggedOut is expected before code is entered
+                    if (hasValidCredentials(sessionPath)) {
+                        console.log(chalk.red.bold(`🚪 Logged out - deleting session directory`));
+                        setTimeout(() => {
+                            try { deleteFolderRecursive(sessionPath); } catch (_) {}
+                        }, 2000);
+                    } else {
+                        console.log(chalk.yellow(`🔗 Pairing-phase disconnect (loggedOut) — keeping session directory`));
+                    }
                     shouldReconnect = false;
                     break;
             }
@@ -828,10 +846,16 @@ bad.ev.on('messages.upsert', async chatUpdate => {
                     break;
 
                 case 401:
-                    console.log(chalk.red(`🔐 401 - Logged out, deleting session directory...`));
-                    setTimeout(() => {
-                        try { deleteFolderRecursive(sessionPath); } catch (_) {}
-                    }, 2000);
+                    // Only delete session if it was previously registered (real logout)
+                    // During initial pairing, 401 is expected before the code is entered
+                    if (hasValidCredentials(sessionPath)) {
+                        console.log(chalk.red(`🔐 401 - Logged out, deleting session directory...`));
+                        setTimeout(() => {
+                            try { deleteFolderRecursive(sessionPath); } catch (_) {}
+                        }, 2000);
+                    } else {
+                        console.log(chalk.yellow(`🔗 Pairing-phase 401 — keeping session directory for retries`));
+                    }
                     break;
 
                 case 429:
@@ -865,6 +889,12 @@ bad.ev.on('messages.upsert', async chatUpdate => {
             // Reset retry counter on successful connection
             delete retryCountMap[kingbadboiNumber];
             
+            // Update global connections map status
+            const phoneNum = kingbadboiNumber.replace('@s.whatsapp.net', '');
+            if (global.activeConnections.has(phoneNum)) {
+                global.activeConnections.get(phoneNum).status = 'connected';
+            }
+            
             // Start connection monitoring
             startKeepAliveMonitor();
             startConnectionValidator();
@@ -881,6 +911,11 @@ bad.ev.on('messages.upsert', async chatUpdate => {
             console.log(chalk.green.bold(`❤️‍🔥🎊𝐄𝐌𝐌𝐘𝐇𝐄𝐍𝐙-𝐕3.1🎊❤️‍🔥 is online.`));
             console.log(chalk.cyan(`< ====================[ ❤️‍🔥🎊𝐄𝐌𝐌𝐘𝐇𝐄𝐍𝐙-𝐕3.1🎊❤️‍🔥-RENTBOT ]========================= >`));
         } else if (connection === "connecting") {
+            // Update global connections map status
+            const phoneNum = kingbadboiNumber.replace('@s.whatsapp.net', '');
+            if (global.activeConnections.has(phoneNum)) {
+                global.activeConnections.get(phoneNum).status = 'connecting';
+            }
             console.log(chalk.yellow(`🔄 Connecting ${kingbadboiNumber}...`));
         }
     });
