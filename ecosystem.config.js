@@ -5,7 +5,7 @@
 module.exports = {
   apps: [{
     name: "tg-bot",
-    script: "./server.js",
+    script: "./src/index.js",
     watch: false,          // FIX: watch:true was restarting on any file change
     autorestart: true,
     max_memory_restart: "1500M",

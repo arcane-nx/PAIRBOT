@@ -1,0 +1,28 @@
+/**
+ * Modularized by Antigravity
+ */
+const originalCommand = /**
+   * Created By EmmyHenz
+   * Contact Me on wa.me/2349125042727
+*/
+
+const axios = require('axios');
+
+async function (sock, chatId, message) {
+    try {
+        const response = await axios.get('https://uselessfacts.jsph.pl/random.json?language=en');
+        const fact = response.data.text;
+        await sock.sendMessage(chatId, { text: fact },{ quoted: message });
+    } catch (error) {
+        console.error('Error fetching fact:', error);
+        await sock.sendMessage(chatId, { text: 'Sorry, I could not fetch a fact right now.' },{ quoted: message });
+    }
+};
+
+
+module.exports = {
+    name: 'fact',
+    async exec(sock, chatId, msg, args) {
+        return originalCommand(sock, chatId, msg, args);
+    }
+};
